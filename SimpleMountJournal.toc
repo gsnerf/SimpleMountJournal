@@ -1,0 +1,12 @@
+## Interface: 70300
+## Title: Simple Mount Journal
+## Notes: Simplifies the mount journal by aggregating mounts with the same model.
+## Author: Thurmal
+## Version: 1.0.0-DEV
+## LoadOnDemand: 1
+## LoadWith: Blizzard_Collections
+## SavedVariables: MountCollection
+
+Database.lua
+SimpleMountJournal.lua
+Debug.lua
