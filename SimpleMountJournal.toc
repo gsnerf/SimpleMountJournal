@@ -1,4 +1,4 @@
-## Interface: 70300
+## Interface: 80000
 ## Title: Simple Mount Journal
 ## Notes: Simplifies the mount journal by aggregating mounts with the same model.
 ## Author: Thurmal
