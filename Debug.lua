@@ -1,7 +1,7 @@
 local AddOnName, AddOnTable = ...
 local _
 
-MountCollection = {}
+local MountCollection = {}
 
 function Export() 
     local mountCount = 0
@@ -34,3 +34,4 @@ function Export()
 end
 
 AddOnTable["Export"] = Export
+AddOnTable["DebugCollection"] = MountCollection
