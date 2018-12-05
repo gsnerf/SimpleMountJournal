@@ -58,6 +58,6 @@ function AddOnTable:LoadDatabase()
         end
     end
 
-    AddOnTable["Database"] = database
+    AddOnTable["GroupDatabase"] = database
     return database
 end

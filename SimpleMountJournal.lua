@@ -12,6 +12,100 @@ local MOUNT_FACTION_TEXTURES = {
 
 local database = AddOnTable:LoadDatabase()
 
+--[[
+    to correctly generate the mount list we need to have a look at several things
+    1. only show the mounts currently visible by the filter system
+    2. show groups of which at least one mount is visible by the filter system
+    3. apply correct ordering as done by the original system:
+       - favorites (and groups containing at least one favorite mount) first
+       - other owned mounts (and groups containing at least one other owned mount)
+       - not owned mounts (and all groups with no owned mounts)
+]]
+
+function createGroupInfo(id, name, group)
+    return {
+        ID = id,
+        Name = name,
+        Group = group,
+        IsGroup = true,
+        IsFavorite = function()
+            for _,value in ipairs(group) do
+                if (value.IsFavorite) then
+                    return true
+                end
+            end
+            return false
+        end,
+        IsCollected = function()
+            for _,value in ipairs(group) do
+                if (value.IsCollected) then
+                    return true
+                end
+            end
+            return false
+        end
+    }
+end
+
+function createMountInfo(id, name, favorite, collected)
+    return {
+        ID = id,
+        Name = name,
+        Group = nil,
+        IsGroup = false,
+        IsFavorite = function() return favorite end,
+        IsCollected = function() return collected end
+    }
+
+end
+
+function GetVisibleMounts()
+    local visibleGroups = {}
+    local visibleMountCache = {}
+    for index=1, C_MountJournal.GetNumDisplayedMounts() do
+        local creatureName, spellID, icon, active, isUsable, _, isFavorite, isFactionSpecific, faction, _, isCollected, mountID = C_MountJournal.GetDisplayedMountInfo(index)
+        local mountGroupName = AddOnTable.GroupDatabase.MountIdModelGroupMap[mountID]
+
+        if mountGroupName ~= nil then
+            local mountInfo = { MountID = mountID, IsFavorite = isFavorite, IsCollected = isCollected }
+            if visibleGroups[mountGroupName] ~= nil then
+                table.insert(visibleGroups[mountGroupName], mountInfo)
+            else
+                local newGroup = {}
+                table.insert(newGroup, mountInfo)
+                visibleGroups[mountGroupName] = newGroup
+                table.insert(visibleMountCache, createGroupInfo(mountGroupName, AddOnTable.Localization[mountGroupName], newGroup))
+            end
+        else
+            table.insert(visibleMountCache, createMountInfo(mountID, creatureName, isFavorite, isCollected))
+        end
+    end
+
+    return visibleMountCache
+end
+
+function SortEntries(visibleMounts)
+    local sortFunction = function(elem1, elem2)
+        if elem1.IsFavorite() ~= elem2.IsFavorite() then
+            return elem1.IsFavorite()
+        end
+
+        if elem1.IsCollected() ~= elem2.IsCollected() then
+            return elem1.IsCollected()
+        end
+
+        return elem1.Name < elem2.Name
+    end
+    table.sort(visibleMounts, sortFunction)
+end
+
+function AddOnTable:UpdateVisibleMountInfo()
+    local visibleMounts = GetVisibleMounts()
+    SortEntries(visibleMounts)
+    AddOnTable["VisibleEntries"] = visibleMounts
+end
+
+AddOnTable:UpdateVisibleMountInfo()
 
 local MountJournal_UpdateMountList_ORIG = MountJournal_UpdateMountList
 MountJournal_UpdateMountList = function()
@@ -30,25 +124,18 @@ MountJournal_UpdateMountList = function()
     end
     
     -- determine how many entries actually shown in list
-    local numDisplayedMountsBlizz = C_MountJournal.GetNumDisplayedMounts()
-    local numDisplayedMounts = numDisplayedMountsBlizz - database.OverallGroupedMounts + database.OverallGroupCount
-    DEFAULT_CHAT_FRAME:AddMessage(GetTime().." SMJ: Need to show "..numDisplayedMounts.." mounts rather than "..numDisplayedMountsBlizz)
+    local numDisplayedMounts = #AddOnTable.VisibleEntries
     
     -- update buttons based on stuff to show
     local scrollFrame = MountJournal.ListScrollFrame
     local offset = HybridScrollFrame_GetOffset(scrollFrame)
     local buttons = scrollFrame.buttons
-    local skipCount = 0
     for i=1, #buttons do
 		local button = buttons[i]
 		local displayIndex = i + offset
         if ( displayIndex <= numDisplayedMounts and showMounts ) then
             --updateButtonWithMount(displayIndex, button)
-            local skipped = SMJ_updateButtonWithMount(displayIndex + skipCount, button)
-            if skipped then
-                skipCount = skipCount + 1
-                i = i - 1
-            end
+            SMJ_updateButtonWithMount(displayIndex, button)
         else
             SMJ_resetButton(button)
         end
@@ -75,34 +162,20 @@ end
 --[[
     @param index index of the shown mount as needed by C_MountJournal.GetDisplayedMountInfo()
     @param button the button element to update with the new info
-    @return true if index was skipped because it is already shown, false in any other case
 ]]
 function SMJ_updateButtonWithMount(index, button)
-    local creatureName, spellID, icon, active, isUsable, _, isFavorite, isFactionSpecific, faction, _, isCollected, mountID = C_MountJournal.GetDisplayedMountInfo(index)
+    local visibleEntry = AddOnTable.VisibleEntries[index]
 
-    local mountGroup = AddOnTable.Database.MountIdModelGroupMap[mountID]
-    if (mountGroup ~= nil) then
-        DEFAULT_CHAT_FRAME:AddMessage(GetTime().." SMJ: Showing "..creatureName.." which is part of "..mountGroup)
-        if (not SMJ_isGroupButtonVisible(mountGroup)) then
-            SMJ_createGroupButton(index, mountGroup, button)
-            return false
-        end
-        return true
+    if visibleEntry.IsGroup then
+        SMJ_createGroupButton(index, visibleEntry, button)
     else
-        local needsFanfare = C_MountJournal.NeedsFanfare(mountID)
+        local creatureName, spellID, icon, active, isUsable, _, isFavorite, isFactionSpecific, faction, _, isCollected = C_MountJournal.GetMountInfoByID(visibleEntry.ID)
         SMJ_updateButton(index, button, creatureName, spellID, icon, active, isUsable, isFavorite, isFactionSpecific, faction, isCollected)
-        return false
     end
 end
 
-function SMJ_isGroupButtonVisible(mountGroup)
-    -- TODO: actually some how check if this is the case
-    return false
-end
-
-function SMJ_createGroupButton(index, groupName, button)
-    local localizedGroupName = groupName -- TODO: actually add localization!
-    local group = AddOnTable.Database.MountGroups[groupName]
+function SMJ_createGroupButton(index, groupEntry, button)
+    local group = AddOnTable.GroupDatabase.MountGroups[groupEntry.ID]
 
     local icon = nil
     local isActive = false
@@ -127,7 +200,7 @@ function SMJ_createGroupButton(index, groupName, button)
     end
     
     --[[ TODO: selection based on spellID cannot work right now, we have to somehow check against the spellIDs of the whole group here ]]
-    SMJ_updateButton(index, button, localizedGroupName, 0, icon, isActive, isUsable, isFavorite, isFactionSpecific, faction, isCollected)
+    SMJ_updateButton(index, button, groupEntry.Name, 0, icon, isActive, isUsable, isFavorite, isFactionSpecific, faction, isCollected)
 end
 
 function SMJ_updateButton(index, button, creatureName, spellID, icon, active, isUsable, isFavorite, isFactionSpecific, faction, isCollected)
