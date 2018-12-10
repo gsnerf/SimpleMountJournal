@@ -139,6 +139,7 @@ MountJournal_UpdateMountList = function()
         else
             SMJ_resetButton(button)
         end
+        button:SetScript("OnClick", SMJ_MountListItem_OnClick)
     end
     
     local totalHeight = numDisplayedMounts * MOUNT_BUTTON_HEIGHT
@@ -289,4 +290,31 @@ function SMJ_resetButton(button)
     button.factionIcon:Hide()
     button.background:SetVertexColor(1, 1, 1, 1)
     button.iconBorder:Hide()
+end
+
+function SMJ_MountListItem_OnClick(self, button)
+    local visibleEntry = AddOnTable.VisibleEntries[self.index]
+
+    --DEFAULT_CHAT_FRAME:AddMessage(GetTime().." SMJ: Clicked on entry "..self.index.." (Group: "..(visibleEntry.IsGroup and "true" or "false")..", ID="..visibleEntry.ID..")")
+	if ( button ~= "LeftButton" ) then
+		local _, _, _, _, _, _, _, _, _, _, isCollected = C_MountJournal.GetDisplayedMountInfo(self.index)
+		if isCollected then
+			MountJournal_ShowMountDropdown(self.index, self, 0, 0)
+		end
+	elseif ( IsModifiedClick("CHATLINK") ) then
+		local id = self.spellID
+		if ( MacroFrame and MacroFrame:IsShown() ) then
+			local spellName = GetSpellInfo(id)
+			ChatEdit_InsertLink(spellName)
+		else
+			local spellLink = GetSpellLink(id)
+			ChatEdit_InsertLink(spellLink)
+		end
+    elseif ( self.spellID ~= MountJournal.selectedSpellID ) then
+        if (visibleEntry.IsGroup) then
+            MountJournal_SelectByMountID(visibleEntry.Group[1].MountID)
+        else
+            MountJournal_SelectByMountID(visibleEntry.ID)
+        end
+	end
 end
