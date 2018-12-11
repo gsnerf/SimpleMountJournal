@@ -68,7 +68,8 @@ local StaticMountGroups = {
     FastMechanostrider = {
         88, -- yellow
         89, -- white
-        90  -- green
+        90, -- green
+        298, -- gnomeregan
     },
     NetherwingDrakes = {
         186, -- onyx
