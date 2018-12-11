@@ -32,9 +32,16 @@ function SimpleMountJournal_OnLoad(self)
     ]]
     --CollectionsJournal:SetWidth(800)
 
+    self:RegisterEvent("MOUNT_JOURNAL_SEARCH_UPDATED")
+    self:RegisterEvent("NEW_MOUNT_ADDED")
+
     AddOnTable:UpdateVisibleMountInfo()
 end
 
+function SimpleMountJournal_OnEvent(self, event, ...)
+    AddOnTable:UpdateVisibleMountInfo()
+    MountJournal_UpdateMountList()
+end
 
 
 --[[

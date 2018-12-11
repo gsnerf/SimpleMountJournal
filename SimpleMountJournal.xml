@@ -59,6 +59,7 @@
     <Frame name="SimpleMountJournalFrame">
         <Scripts>
             <OnLoad function="SimpleMountJournal_OnLoad" />
+            <OnEvent function="SimpleMountJournal_OnEvent" />
         </Scripts>
     </Frame>
 </Ui>
