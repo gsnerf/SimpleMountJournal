@@ -1,0 +1,64 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+	
+	<Script file="SimpleMountJournal.lua" />
+
+    <Frame name="MountVariantListTemplate" virtual="true" inherits="InsetFrameTemplate">
+        <!-- width will be dynamic, but I expect a fixed height for now -->
+        <Size y="50" />
+        <KeyValues>
+			<KeyValue key="CurrentGroup" value="0" type="number"/>
+		</KeyValues>
+        <Frames>
+            <Button parentKey="VariantButton1" inherits="VariantListButtonTemplate">
+                <Anchors><Anchor point="TOPLEFT" x="8" y="-5" /></Anchors>
+            </Button>
+            <Button parentKey="VariantButton2" inherits="VariantListButtonTemplate">
+                <Anchors><Anchor point="TOPLEFT" relativeKey="$parent.VariantButton1" relativePoint="TOPRIGHT" x="4" y="0" /></Anchors>
+            </Button>
+            <Button parentKey="VariantButton3" inherits="VariantListButtonTemplate">
+                <Anchors><Anchor point="TOPLEFT" relativeKey="$parent.VariantButton2" relativePoint="TOPRIGHT" x="4" y="0" /></Anchors>
+            </Button>
+            <Button parentKey="VariantButton4" inherits="VariantListButtonTemplate">
+                <Anchors><Anchor point="TOPLEFT" relativeKey="$parent.VariantButton3" relativePoint="TOPRIGHT" x="4" y="0" /></Anchors>
+            </Button>
+            <Button parentKey="VariantButton5" inherits="VariantListButtonTemplate">
+                <Anchors><Anchor point="TOPLEFT" relativeKey="$parent.VariantButton4" relativePoint="TOPRIGHT" x="4" y="0" /></Anchors>
+            </Button>
+            <Button parentKey="VariantButton6" inherits="VariantListButtonTemplate">
+                <Anchors><Anchor point="TOPLEFT" relativeKey="$parent.VariantButton5" relativePoint="TOPRIGHT" x="4" y="0" /></Anchors>
+            </Button>
+            <Button parentKey="VariantButton7" inherits="VariantListButtonTemplate">
+                <Anchors><Anchor point="TOPLEFT" relativeKey="$parent.VariantButton6" relativePoint="TOPRIGHT" x="4" y="0" /></Anchors>
+            </Button>
+            <Button parentKey="VariantButton8" inherits="VariantListButtonTemplate">
+                <Anchors><Anchor point="TOPLEFT" relativeKey="$parent.VariantButton7" relativePoint="TOPRIGHT" x="4" y="0" /></Anchors>
+            </Button>
+            <Button parentKey="VariantButton9" inherits="VariantListButtonTemplate">
+                <Anchors><Anchor point="TOPLEFT" relativeKey="$parent.VariantButton8" relativePoint="TOPRIGHT" x="4" y="0" /></Anchors>
+            </Button>
+        </Frames>
+    </Frame>
+
+    <Button name="VariantListButtonTemplate" motionScriptsWhileDisabled="true" virtual="true">
+        <Size x="40" y="40" />
+        <Layers>
+            <Layer level="BORDER">
+                <Texture parentKey="icon">
+                    <Size x="38" y="38" />
+                    <Anchors>
+                        <Anchor point="CENTER" />
+                    </Anchors>
+                </Texture>
+            </Layer>
+        </Layers>
+        <Frames>
+            <!-- TODO: Add the DragButton here, in a similar way to the lists DragButton -->
+        </Frames>
+    </Button>
+
+    <Frame name="SimpleMountJournalFrame">
+        <Scripts>
+            <OnLoad function="SimpleMountJournal_OnLoad" />
+        </Scripts>
+    </Frame>
+</Ui>

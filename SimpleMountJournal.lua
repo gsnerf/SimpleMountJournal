@@ -12,6 +12,31 @@ local MOUNT_FACTION_TEXTURES = {
 
 local database = AddOnTable:LoadDatabase()
 
+--[[ 
+    We cannot hook directly into the MountJournal loading events as we are loaded afterwards.
+    Thats why we need the frame and it's loading mechanism. On the bright side:
+    The MountJournal is completely loaded here and can be adapted as wished.
+]]
+function SimpleMountJournal_OnLoad(self)
+    local variantFrame = CreateFrame("Frame", "MountVariantFrame", MountJournal, "MountVariantListTemplate")
+    variantFrame:SetPoint("TOPRIGHT", MountJournal, "TOPRIGHT", -6, -60)
+    variantFrame:SetPoint("BOTTOMLEFT", MountJournal.LeftInset, "TOPRIGHT", 20, -50)
+
+    AddOnTable["MountVariantFrame"] = variantFrame
+    
+    MountJournal.RightInset:SetPoint("TOPRIGHT", variantFrame, "BOTTOMRIGHT", 0, 0)
+
+    --[[
+        TODO: See if it is feasible to change the default width to make room for a vertical list of color variations.
+        This would also require adaptions in PetCollection, HeirloomCollection and ToyBox as this looks SHITTY with different width...
+    ]]
+    --CollectionsJournal:SetWidth(800)
+
+    AddOnTable:UpdateVisibleMountInfo()
+end
+
+
+
 --[[
     to correctly generate the mount list we need to have a look at several things
     1. only show the mounts currently visible by the filter system
@@ -104,8 +129,6 @@ function AddOnTable:UpdateVisibleMountInfo()
     SortEntries(visibleMounts)
     AddOnTable["VisibleEntries"] = visibleMounts
 end
-
-AddOnTable:UpdateVisibleMountInfo()
 
 local MountJournal_UpdateMountList_ORIG = MountJournal_UpdateMountList
 MountJournal_UpdateMountList = function()
@@ -312,9 +335,43 @@ function SMJ_MountListItem_OnClick(self, button)
 		end
     elseif ( self.spellID ~= MountJournal.selectedSpellID ) then
         if (visibleEntry.IsGroup) then
+            MountVariantFrame.CurrentGroup = self.index
             MountJournal_SelectByMountID(visibleEntry.Group[1].MountID)
         else
+            MountVariantFrame.CurrentGroup = 0
             MountJournal_SelectByMountID(visibleEntry.ID)
         end
+        SMJ_MountVariantList_UpdateList()
 	end
+end
+
+function SMJ_MountVariantList_UpdateList()
+    --DEFAULT_CHAT_FRAME:AddMessage(GetTime().." SMJ: updating variant list")
+    if (MountVariantFrame.CurrentGroup == 0) then
+        --MountVariantFrame:Hide()
+        for i=1, 9 do
+            local button = MountVariantFrame["VariantButton"..i]
+            button:Hide()
+        end
+        return
+    end
+
+    MountVariantFrame:Show()
+    local visibleEntry = AddOnTable.VisibleEntries[MountVariantFrame.CurrentGroup]
+    local visibleGroup = visibleEntry.Group
+    
+    for i=1, 9 do
+        local button = MountVariantFrame["VariantButton"..i]
+        if (i <= #visibleGroup) then
+            local mountID = visibleGroup[i].MountID
+            --DEFAULT_CHAT_FRAME:AddMessage(GetTime().." SMJ: showing mount "..mountID)
+            local creatureName, spellID, icon, active, isUsable, _, isFavorite, isFactionSpecific, faction, _, isCollected = C_MountJournal.GetMountInfoByID(mountID)
+            local needsFanfare = C_MountJournal.NeedsFanfare(mountID)
+            button.icon:SetTexture(needsFanfare and COLLECTIONS_FANFARE_ICON or icon)
+            button.spellID = spellID
+            button:Show()
+        else
+            button:Hide()
+        end
+    end
 end

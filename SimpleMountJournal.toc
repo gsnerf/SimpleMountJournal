@@ -9,5 +9,5 @@
 
 Localization.lua
 Database.lua
-SimpleMountJournal.lua
+SimpleMountJournal.xml
 Debug.lua
