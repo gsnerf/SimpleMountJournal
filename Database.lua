@@ -2,6 +2,13 @@ local AddOnName, AddOnTable = ...
 local _
 
 local StaticMountGroups = {
+    Carpets = {
+        279, -- magnificent flying
+        285, -- flying
+        375, -- frosty flying
+        603, -- creeping
+        905, -- leywoven flying
+    },
     ClassMounts = {
         860, -- mage
         861, -- priest
@@ -50,11 +57,34 @@ local StaticMountGroups = {
         501, -- purple
     },
     Gron = { 607, 655 },
+    Hawkstrider = {
+        152, -- red
+        157, -- purple
+        158, -- blue
+        159, -- black
+        302, -- silvermoon
+        332, -- sunreaver
+        877, -- ivory
+    },
+    SwiftHawkstrider = {
+        146, -- pink
+        160, -- green
+        161, -- purple
+        213, -- white
+        320, -- red
+    },
     HeavenlyCloudSerpents = {
         473, -- onyx
         474, -- crimson
         475, -- golden
         477, -- azure
+    },
+    ManaRays = {
+        906, -- darkspore
+        973, -- lambent
+        974, -- vibrant
+        975, -- Felglow
+        976, -- Scintillating
     },
     Mechanostrider = {
         39,  -- red
@@ -96,6 +126,12 @@ local StaticMountGroups = {
         278, -- green
         306, -- ironbound
         307, -- rusted
+    },
+    StoneDrakes = {
+        391, -- volcanic
+        393, -- phosphorescent
+        397, -- vitreous
+        407, -- sand
     },
     ThunderingCloudSerpents = {
         466, -- jade
