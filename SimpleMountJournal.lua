@@ -75,18 +75,27 @@ function createGroupInfo(id, name, group)
                 end
             end
             return false
+        end,
+        NeedsFanfare = function()
+            for _,value in ipairs(group) do
+                if (value.NeedsFanfare) then
+                    return true
+                end
+            end
+            return false
         end
     }
 end
 
-function createMountInfo(id, name, favorite, collected)
+function createMountInfo(id, name, favorite, collected, needsFanfare)
     return {
         ID = id,
         Name = name,
         Group = nil,
         IsGroup = false,
         IsFavorite = function() return favorite end,
-        IsCollected = function() return collected end
+        IsCollected = function() return collected end,
+        NeedsFanfare = function() return needsFanfare end
     }
 
 end
@@ -96,10 +105,11 @@ function GetVisibleMounts()
     local visibleMountCache = {}
     for index=1, C_MountJournal.GetNumDisplayedMounts() do
         local creatureName, spellID, icon, active, isUsable, _, isFavorite, isFactionSpecific, faction, _, isCollected, mountID = C_MountJournal.GetDisplayedMountInfo(index)
+        local needsFanfare = C_MountJournal.NeedsFanfare(mountID)
         local mountGroupName = AddOnTable.GroupDatabase.MountIdModelGroupMap[mountID]
 
         if mountGroupName ~= nil then
-            local mountInfo = { MountID = mountID, IsFavorite = isFavorite, IsCollected = isCollected }
+            local mountInfo = { MountID = mountID, IsFavorite = isFavorite, IsCollected = isCollected, NeedsFanfare = needsFanfare }
             if visibleGroups[mountGroupName] ~= nil then
                 table.insert(visibleGroups[mountGroupName], mountInfo)
             else
@@ -109,7 +119,7 @@ function GetVisibleMounts()
                 table.insert(visibleMountCache, createGroupInfo(mountGroupName, AddOnTable.Localization[mountGroupName], newGroup))
             end
         else
-            table.insert(visibleMountCache, createMountInfo(mountID, creatureName, isFavorite, isCollected))
+            table.insert(visibleMountCache, createMountInfo(mountID, creatureName, isFavorite, isCollected, needsFanfare))
         end
     end
 
@@ -118,6 +128,10 @@ end
 
 function SortEntries(visibleMounts)
     local sortFunction = function(elem1, elem2)
+        if elem1.NeedsFanfare() ~= elem2.NeedsFanfare() then
+            return elem1.NeedsFanfare()
+        end
+
         if elem1.IsFavorite() ~= elem2.IsFavorite() then
             return elem1.IsFavorite()
         end
