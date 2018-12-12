@@ -201,7 +201,8 @@ function SMJ_updateButtonWithMount(index, button)
         SMJ_createGroupButton(index, visibleEntry, button)
     else
         local creatureName, spellID, icon, active, isUsable, _, isFavorite, isFactionSpecific, faction, _, isCollected = C_MountJournal.GetMountInfoByID(visibleEntry.ID)
-        SMJ_updateButton(index, button, creatureName, spellID, icon, active, isUsable, isFavorite, isFactionSpecific, faction, isCollected)
+        local needsFanfare = C_MountJournal.NeedsFanfare(visibleEntry.ID)
+        SMJ_updateButton(index, button, creatureName, spellID, icon, active, isUsable, isFavorite, isFactionSpecific, faction, isCollected, needsFanfare)
     end
 end
 
@@ -231,10 +232,10 @@ function SMJ_createGroupButton(index, groupEntry, button)
     end
     
     --[[ TODO: selection based on spellID cannot work right now, we have to somehow check against the spellIDs of the whole group here ]]
-    SMJ_updateButton(index, button, groupEntry.Name, 0, icon, isActive, isUsable, isFavorite, isFactionSpecific, faction, isCollected)
+    SMJ_updateButton(index, button, groupEntry.Name, 0, icon, isActive, isUsable, isFavorite, isFactionSpecific, faction, isCollected, needsFanfare)
 end
 
-function SMJ_updateButton(index, button, creatureName, spellID, icon, active, isUsable, isFavorite, isFactionSpecific, faction, isCollected)
+function SMJ_updateButton(index, button, creatureName, spellID, icon, active, isUsable, isFavorite, isFactionSpecific, faction, isCollected, needsFanfare)
     button.name:SetText(creatureName)
     button.icon:SetTexture(needsFanfare and COLLECTIONS_FANFARE_ICON or icon)
     button.new:SetShown(needsFanfare)
@@ -374,8 +375,42 @@ function SMJ_MountVariantList_UpdateList()
             --DEFAULT_CHAT_FRAME:AddMessage(GetTime().." SMJ: showing mount "..mountID)
             local creatureName, spellID, icon, active, isUsable, _, isFavorite, isFactionSpecific, faction, _, isCollected = C_MountJournal.GetMountInfoByID(mountID)
             local needsFanfare = C_MountJournal.NeedsFanfare(mountID)
-            button.icon:SetTexture(needsFanfare and COLLECTIONS_FANFARE_ICON or icon)
+            -- basic info
             button.spellID = spellID
+            
+            -- icon related stuff
+            button.Icon:SetTexture(needsFanfare and COLLECTIONS_FANFARE_ICON or icon)
+            if (isCollected) then
+                button.Icon:SetDesaturated(false)
+                button.Icon:SetAlpha(1.0)
+            else
+                button.Icon:SetDesaturated(true)
+                button.Icon:SetAlpha(0.25)
+            end
+
+            -- favorite overlay
+            if ( isFavorite ) then
+                button.Favorite:Show()
+            else
+                button.Favorite:Hide()
+            end
+
+            -- usability overlay
+            if (not isUsable and isCollected) then
+                button.Unusable:Show()
+            else
+                button.Unusable:Hide()
+            end
+
+            -- selection overlay
+            if ( MountJournal.selectedSpellID == spellID ) then
+                button.selected = true
+                button.SelectedTexture:Show()
+            else
+                button.selected = false
+                button.SelectedTexture:Hide()
+            end
+
             button:Show()
         else
             button:Hide()

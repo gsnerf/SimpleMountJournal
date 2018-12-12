@@ -43,13 +43,48 @@
         <Size x="40" y="40" />
         <Layers>
             <Layer level="BORDER">
-                <Texture parentKey="icon">
+                <Texture parentKey="Icon">
                     <Size x="38" y="38" />
                     <Anchors>
                         <Anchor point="CENTER" />
                     </Anchors>
                 </Texture>
             </Layer>
+            <Layer level="OVERLAY">
+                <Texture parentKey="Unusable" hidden="true">
+                    <Size x="38" y="38"/>
+                    <Anchors>
+                        <Anchor point="CENTER" />
+                    </Anchors>
+                    <Color r="1" g="0" b="0" a="0.2"/>
+                </Texture>
+                <Texture parentKey="Favorite" atlas="PetJournal-FavoritesIcon" useAtlasSize="true" hidden="true">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.Icon" x="-8" y="8"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+            <Layer level="OVERLAY" textureSubLevel="1">
+                <Texture parentKey="SelectedTexture" atlas="PetList-ButtonSelect" hidden="true"/>
+            </Layer>
+			<Layer level="OVERLAY" textureSubLevel="2">
+                <!-- in it's current form not usefull, but maybe as a  -->
+				<FontString parentKey="New" inherits="GameFontHighlight" wordwrap="false" justifyH="CENTER" text="NEW_CAPS" hidden="true">
+					<Anchors>
+						<Anchor point="RIGHT" x="-15" y="0"/>
+					</Anchors>
+					<Shadow>
+						<Color r="0.32" g="0.5" b="1.0"/>
+					</Shadow>
+				</FontString>
+
+				<Texture parentKey="NewGlow" atlas="collections-newglow" hidden="true">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.New" x="-20" y="10"/>
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent.New" x="20" y="-10"/>
+					</Anchors>
+				</Texture>
+			</Layer>
         </Layers>
         <Frames>
             <!-- TODO: Add the DragButton here, in a similar way to the lists DragButton -->
