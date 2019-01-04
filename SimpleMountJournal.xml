@@ -86,9 +86,29 @@
 				</Texture>
 			</Layer>
         </Layers>
-        <Frames>
-            <!-- TODO: Add the DragButton here, in a similar way to the lists DragButton -->
-        </Frames>
+        <HighlightTexture name="$parentHighlight" file="Interface\Buttons\ButtonHilight-Square" alphaMode="ADD"/>
+        <Scripts>
+            <OnClick function="SMJ_MountVariantListButton_OnClick"/>
+            <OnEnter>
+                GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+                local spellID = self.spellID
+                if (spellID) then
+                    MountJournalMountButton_UpdateTooltip(self)
+                    self.showingTooltip = true
+                end
+            </OnEnter>
+            <OnLeave>
+                GameTooltip:Hide()
+                self.showingTooltip = false
+            </OnLeave>
+            <OnLoad>
+                self:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+                self:RegisterForDrag("LeftButton")
+            </OnLoad>
+            <OnDragStart>
+                PickupSpell(self.spellID)
+            </OnDragStart>
+        </Scripts>
     </Button>
 
     <Frame name="SimpleMountJournalFrame">

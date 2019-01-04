@@ -391,6 +391,7 @@ function SMJ_MountVariantList_UpdateList()
             local needsFanfare = C_MountJournal.NeedsFanfare(mountID)
             -- basic info
             button.spellID = spellID
+            button.mountID = mountID
             
             -- icon related stuff
             button.Icon:SetTexture(needsFanfare and COLLECTIONS_FANFARE_ICON or icon)
@@ -430,4 +431,25 @@ function SMJ_MountVariantList_UpdateList()
             button:Hide()
         end
     end
+end
+
+function SMJ_MountVariantListButton_OnClick(self, button)
+	if ( button ~= "LeftButton" ) then
+		local _, _, _, _, _, _, _, _, _, _, isCollected = C_MountJournal.GetMountInfoByID(self.mountID)
+        if isCollected then
+            -- TODO: index won't work here!
+			--MountJournal_ShowMountDropdown(parent.index, self, 0, 0);
+		end
+	elseif ( IsModifiedClick("CHATLINK") ) then
+		local id = self.spellID;
+		if ( MacroFrame and MacroFrame:IsShown() ) then
+			local spellName = GetSpellInfo(id);
+			ChatEdit_InsertLink(spellName);
+		else
+			local spellLink = GetSpellLink(id)
+			ChatEdit_InsertLink(spellLink);
+		end
+	else
+		PickupSpell(self.spellID);
+	end
 end
