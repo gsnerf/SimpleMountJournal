@@ -266,7 +266,7 @@ function SMJ_updateButton(index, button, creatureName, spellID, icon, active, is
     end
     button:Show()
 
-    if ( MountJournal.selectedSpellID == spellID ) then
+    if ( MountJournal.selectedSpellID == spellID or MountVariantFrame.CurrentGroup == index) then
         button.selected = true
         button.selectedTexture:Show()
     else
