@@ -449,7 +449,8 @@ function SMJ_MountVariantListButton_OnClick(self, button)
 			local spellLink = GetSpellLink(id)
 			ChatEdit_InsertLink(spellLink);
 		end
-	else
-		PickupSpell(self.spellID);
+    else
+        MountJournal_SetSelected(self.mountID, self.spellID)
+        SMJ_MountVariantList_UpdateList()
 	end
 end
